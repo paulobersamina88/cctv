@@ -48,3 +48,17 @@ Xiaomi camera support depends on exact model and firmware. If your Xiaomi model 
 3. Create a bot and copy the token.
 4. Get your chat ID.
 5. Enter bot token and chat ID in the Streamlit sidebar.
+
+
+## Streamlit Cloud Note
+
+This fixed version uses `opencv-python-headless` to avoid the common `import cv2` error on Streamlit Cloud.
+
+However, Streamlit Cloud usually cannot access CCTV cameras using local IP addresses such as `192.168.1.xxx`. For real CCTV viewing, run this app on a local PC/Raspberry Pi connected to the same WiFi as your cameras.
+
+Recommended local command:
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
