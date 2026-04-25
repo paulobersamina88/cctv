@@ -1,0 +1,39 @@
+{
+  "cameras": [
+    {
+      "name": "Living Room - Tapo C200",
+      "url": "rtsp://username:password@192.168.1.100:554/stream1",
+      "enabled": true,
+      "fall_aspect_ratio": 1.2,
+      "danger_zones": [
+        {
+          "name": "Chair / Sofa Edge",
+          "x1": 0.6,
+          "y1": 0.45,
+          "x2": 0.95,
+          "y2": 0.95
+        }
+      ]
+    },
+    {
+      "name": "Bedroom - Xiaomi",
+      "url": "rtsp://username:password@192.168.1.101:554/stream1",
+      "enabled": false,
+      "fall_aspect_ratio": 1.2,
+      "danger_zones": [
+        {
+          "name": "Bed Edge",
+          "x1": 0.05,
+          "y1": 0.5,
+          "x2": 0.45,
+          "y2": 0.95
+        }
+      ]
+    }
+  ],
+  "telegram": {
+    "enabled": false,
+    "bot_token": "",
+    "chat_id": ""
+  }
+}
