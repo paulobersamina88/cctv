@@ -1,69 +1,88 @@
 
 import streamlit as st
-import cv2
-import time
+from datetime import datetime
 
-st.set_page_config(page_title="CCTV AI Dashboard LITE", layout="wide")
+st.set_page_config(page_title="Home CCTV Dashboard - Cloud Safe", layout="wide")
 
-st.title("🏠 CCTV AI Dashboard (Lite)")
-st.caption("Lightweight version with person detection and fall-risk heuristic")
+st.title("🏠 Home CCTV Dashboard - Streamlit Cloud Safe")
+st.caption("This version has no OpenCV dependency, so requirements install cleanly on Streamlit Cloud.")
 
-camera_url = st.sidebar.text_input(
-    "Camera RTSP URL",
-    "rtsp://username:password@192.168.1.100:554/stream1"
+st.warning(
+    "Cloud limitation: Streamlit Cloud usually cannot access local CCTV RTSP cameras such as "
+    "192.168.x.x. For real CCTV + AI detection, run the OpenCV version locally on the same WiFi."
 )
 
-fall_ratio = st.sidebar.slider("Fall aspect ratio threshold", 1.0, 2.5, 1.2)
-show_zone = st.sidebar.checkbox("Show danger zone", True)
+st.sidebar.header("Camera Settings")
 
-# Initialize HOG detector
-hog = cv2.HOGDescriptor()
-hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+camera_name = st.sidebar.text_input("Camera name", "Living Room")
+camera_url = st.sidebar.text_input(
+    "Camera browser-accessible URL",
+    "http://your-camera-or-nvr-url"
+)
 
-frame_placeholder = st.empty()
-status_placeholder = st.empty()
+view_mode = st.sidebar.selectbox(
+    "View mode",
+    ["Browser iframe / HTTP camera page", "RTSP instruction only"]
+)
 
-if st.button("Start Camera"):
-    cap = cv2.VideoCapture(camera_url)
+st.subheader("📹 Camera Viewer")
 
-    if not cap.isOpened():
-        st.error("Cannot open camera stream.")
+if view_mode == "Browser iframe / HTTP camera page":
+    st.info("Use this only if your camera/NVR has a browser-accessible HTTP/HTTPS page.")
+    if camera_url and camera_url.startswith(("http://", "https://")):
+        st.components.v1.iframe(camera_url, height=600, scrolling=True)
     else:
-        while True:
-            ret, frame = cap.read()
+        st.error("Please enter an HTTP or HTTPS URL.")
+else:
+    st.info(
+        "RTSP links like rtsp://username:password@192.168.1.100:554/stream1 "
+        "cannot be displayed directly by Streamlit Cloud/browser."
+    )
+    st.code("rtsp://USERNAME:PASSWORD@CAMERA_IP:554/stream1")
 
-            if not ret:
-                st.warning("No frame received.")
-                time.sleep(1)
-                continue
+st.divider()
 
-            frame = cv2.resize(frame, (960, 540))
-            alert = "Normal"
+st.subheader("🚨 Manual Safety Log")
 
-            h, w = frame.shape[:2]
+alert_type = st.selectbox(
+    "Observation",
+    [
+        "Normal",
+        "Baby near chair/edge",
+        "Possible fall-risk situation",
+        "Motion observed",
+        "Other"
+    ]
+)
 
-            # Danger zone (example)
-            zx1, zy1, zx2, zy2 = int(0.6*w), int(0.45*h), int(0.95*w), int(0.95*h)
+notes = st.text_area("Notes")
 
-            if show_zone:
-                cv2.rectangle(frame, (zx1, zy1), (zx2, zy2), (0,0,255), 2)
+if st.button("Save observation"):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    st.success(f"Saved observation: {timestamp} - {camera_name} - {alert_type}")
+    st.write(notes)
 
-            boxes, _ = hog.detectMultiScale(frame, winStride=(8,8))
+st.divider()
 
-            for (x, y, bw, bh) in boxes:
-                cx = x + bw//2
-                cy = y + bh//2
+st.subheader("Recommended Deployment")
 
-                cv2.rectangle(frame, (x,y), (x+bw, y+bh), (0,255,0), 2)
+st.markdown("""
+### Best setup for your Xiaomi / Tapo CCTV
 
-                if bw > bh * fall_ratio:
-                    alert = "⚠️ Possible fall-risk posture"
+For actual CCTV + AI detection:
 
-                if zx1 <= cx <= zx2 and zy1 <= cy <= zy2:
-                    alert = "⚠️ Person in danger zone"
+1. Install Python on a laptop or mini PC at home.
+2. Connect it to the same WiFi as your CCTV.
+3. Use the local OpenCV version.
+4. Access the dashboard inside your home network.
 
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame_placeholder.image(frame_rgb, channels="RGB")
-            status_placeholder.info(alert)
+### Why this cloud-safe version exists
 
-            time.sleep(0.03)
+This package is made to avoid installation failure on Streamlit Cloud by using only:
+
+```txt
+streamlit
+```
+
+No `opencv-python`, no `opencv-python-headless`, no `ultralytics`, no Torch.
+""")

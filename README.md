@@ -1,16 +1,29 @@
 
-# CCTV AI Dashboard LITE (Fixed)
+# Home CCTV Dashboard - Streamlit Cloud Safe
 
-This version is FIXED:
-- No ultralytics (no heavy install issues)
-- Uses OpenCV HOG detector (lightweight)
-- Works in most environments
+This package is designed to install successfully on Streamlit Cloud.
+
+## Requirements
+
+```txt
+streamlit
+```
+
+No OpenCV. No Ultralytics. No Torch.
+
+## Important Limitation
+
+Streamlit Cloud cannot normally access home CCTV RTSP cameras using local IP addresses like:
+
+```text
+192.168.1.xxx
+```
+
+For real CCTV viewing and AI detection, run the OpenCV version locally on the same WiFi as the cameras.
 
 ## Run
 
+```bash
 pip install -r requirements.txt
 streamlit run app.py
-
-## Notes
-- Works best locally (same WiFi as camera)
-- Supports RTSP (Tapo C200)
+```
